@@ -1,6 +1,7 @@
 package com.pipecm.practice.dto;
 
 public enum CustomerType {
+	UNDEFINED (0),
 	PERSON (1),
 	BUSINESS (2);
 	
@@ -13,4 +14,15 @@ public enum CustomerType {
 	public int getValue() {
 		return value;
 	}
+	
+	public static CustomerType parse(int value) {
+		CustomerType customerType = CustomerType.UNDEFINED;
+        for (CustomerType item : CustomerType.values()) {
+            if (item.getValue() == value) {
+            	customerType = item;
+                break;
+            }
+        }
+        return customerType;
+    }
 }

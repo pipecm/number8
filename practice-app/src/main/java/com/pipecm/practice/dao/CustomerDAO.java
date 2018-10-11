@@ -17,6 +17,8 @@ public interface CustomerDAO extends JpaRepository<Customer, Long> {
 	
 	public List<Customer> findByType(CustomerType type);
 	
+	public List<Customer> findByDocumentId(String documentId);
+	
 	@Query(value = "SELECT * FROM customer WHERE LOWER(CONCAT(first_name, ' ', last_name)) LIKE CONCAT('%', LOWER(?1), '%')", nativeQuery = true)
 	public List<Customer> findByName(String name);
 }
