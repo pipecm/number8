@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
@@ -19,9 +20,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.pipecm.practice.controller.CustomerController;
 import com.pipecm.practice.dto.Customer;
 import com.pipecm.practice.dto.CustomerType;
+import com.pipecm.practice.service.CustomerService;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(CustomerController.class)
@@ -38,7 +38,7 @@ public class CustomerControllerTests {
 	private MockMvc mock;
 	
 	@MockBean
-	private CustomerController controller;
+	private CustomerService service;
 	
 	@Test
 	public void whenGetAllCustomers_thenRetrieveAllCustomers() throws Exception {
@@ -54,14 +54,8 @@ public class CustomerControllerTests {
 				.withSelfRel());
 		
 		List<Customer> customersList = singletonList(customer);
-		
-		Link link = linkTo(methodOn(CustomerController.class)
-			      		.getAllCustomers())
-						.withSelfRel();
-		
-		Resources<Customer> resources = new Resources<Customer>(customersList, link);
-		
-		given(controller.getAllCustomers()).willReturn(resources);
+				
+		given(service.getAllCustomers()).willReturn(customersList);
 		
 		mock.perform(get("/api/customers")			
 			.accept(MediaTypes.HAL_JSON_VALUE))
@@ -75,5 +69,18 @@ public class CustomerControllerTests {
 			.andExpect(jsonPath("$._embedded.customerList[0].documentId", is(customer.getDocumentId())))
 			.andExpect(jsonPath("$._embedded.customerList[0].type", is(customer.getType().name())));
 			
+	}
+	
+	@Test
+	public void whenNoCustomers_thenRetrieveEmptyList() throws Exception {
+		List<Customer> emptyList = new ArrayList<Customer>();
+		
+		given(service.getAllCustomers()).willReturn(emptyList);
+		
+		mock.perform(get("/api/customers")			
+				.accept(MediaTypes.HAL_JSON_VALUE))
+				.andDo(print())
+				.andExpect(status().isNoContent());
+		
 	}
 }

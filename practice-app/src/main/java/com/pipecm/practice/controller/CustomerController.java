@@ -29,8 +29,13 @@ public class CustomerController {
 	private CustomerService customerService;
 	
 	@GetMapping("/customers")
-	public Resources<Customer> getAllCustomers() {
+	public ResponseEntity<?> getAllCustomers() {
 		List<Customer> customersList = customerService.getAllCustomers();
+		
+		if(customersList.isEmpty()) {
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		}
+		
 		for (Customer customer : customersList) {
 			Link selfLink = linkTo(methodOn(CustomerController.class)
 			          			.getCustomerById(customer.getCustomerId()))
@@ -42,7 +47,9 @@ public class CustomerController {
 			      		.getAllCustomers())
 						.withSelfRel();
 		
-		return new Resources<Customer>(customersList, link);
+		Resources<Customer> response = new Resources<Customer>(customersList, link);
+		
+		return ResponseEntity.ok(response);
 	}
 	
 	@GetMapping("/customers/{id}")
